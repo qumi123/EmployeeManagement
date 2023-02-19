@@ -1,8 +1,8 @@
-function employee(_id, _name, _position, _coefficient, _salary, _hours) {
-    this.id = _id;
-    this.name = _name;
-    this.position = _position;
-    this.coefficient = _coefficient;
-    this.salary = _salary;
-    this.hours = _hours;
+function employee(_maNhanVien, _tenNhanVien, _chucVu, _heSoChucVu, _luongCoBan, _soGioLamTrongThang) {
+    this.maNhanVien = _maNhanVien;
+    this.tenNhanVien = _tenNhanVien;
+    this.chucVu = _chucVu;
+    this.heSoChucVu = _heSoChucVu;
+    this.luongCoBan = _luongCoBan;
+    this.soGioLamTrongThang = _soGioLamTrongThang;
 }
