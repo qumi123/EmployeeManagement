@@ -6,13 +6,14 @@ function getEle(id) {
 }
 
 function getListEmployee() {
-    callApi.layDanhSachNhanVien()
+    callApi
+        .layDanhSachNhanVien()
         .then(function (result) {
             renderEm(result.data)
         })
         .catch(function (error) {
-            console.log(error);
-        })
+            console.error(error);
+        });
 }
 getListEmployee();
 
@@ -21,11 +22,76 @@ function handleDelete(id) {
         .then(function (result) {
             getListEmployee();
         })
-        .catch(function (result) {
-            console.log(error);
+        .catch(function (error) {
+            console.error(error);
+        });
+}
+function handleEdit(id) {
+    getEle("add").innerHTML = `<button class="btn btn-success" onclick="handleUpdate(${id})">Cập nhật</button>`;
+    callApi.layThongTinNhanVien(id)
+        .then(function (result) {
+            var nv = result.data;
+            getEle("maNhanVien").disabled = true;
+            getEle("maNhanVien").value = nv.maNhanVien;
+            getEle("tenNhanVien").value = nv.tenNhanVien;
+            getEle("chucVu").value = nv.chucVu;
+            getEle("heSoChucVu").value = nv.heSoChucVu;
+            getEle("luongCoBan").value = nv.luongCoBan;
+            getEle("soGioLamTrongThang").value = nv.soGioLamTrongThang;
         })
+        .catch(function (error) {
+            console.error(error);
+        });
+}
+function handleUpdate(id) {
+    var tenNhanVien = getEle("tenNhanVien").value;
+    var chucVu = getEle("chucVu").value;
+    var heSoChucVu = getEle("heSoChucVu").value;
+    var luongCoBan = getEle("luongCoBan").value;
+    var soGioLamTrongThang = getEle("soGioLamTrongThang").value;
+    var isValid = true;
+    isValid &=
+        validation.kiemTraRong(tenNhanVien, "notiName", "(*) Vui lòng nhập tên") &&
+        validation.kiemTraChuoiKyTu(tenNhanVien, "notiName", "Tên nhân viên phải là chữ");
+    isValid &= validation.kiemTraChucVu(
+        "chucVu",
+        "notiPosition",
+        "Yêu cầu chọn chức vụ"
+    );
+    isValid &= validation.kiemTraRong(heSoChucVu, "notiCoefficient", "(*) Vui lòng nhập hệ số lương");
+    isValid &=
+        validation.kiemTraRong(luongCoBan, "notiSalary", "(*) Vui lòng nhập lương") &&
+        validation.kiemTraSo(
+            luongCoBan,
+            "notiSalary",
+            "(*) Lương không hợp lệ",
+            1000000,
+            20000000
+        );
+    isValid &=
+        validation.kiemTraRong(soGioLamTrongThang, "notiHours", "(*) Vui lòng nhập giờ") &&
+        validation.kiemTraSo(soGioLamTrongThang, "notiHours", "(*) Giờ không hợp lệ", 50, 150);
+    if (!isValid) return null;
+    var nv = new employee(maNhanVien, tenNhanVien, chucVu, heSoChucVu, luongCoBan, soGioLamTrongThang);
+    callApi
+        .capNhatThongTinNhanVien(nv)
+        .then(function () {
+            getListEmployee();
+        })
+        .catch(function (error) {
+            console.error(error);
+        });
+    getEle("button").innerHTML = "<button class='btn btn-success' onclick='handleAdd()'>Thêm nhân viên</button>";
+    getEle("maNV").disabled = false;
+    getEle("maNV").value = "";
+    getEle("tenNV").value = "";
+    getEle("chucVu").value = "Chọn chức vụ";
+    getEle("heSo").value = "";
+    getEle("luong").value = "";
+    getEle("gio").value = "";
 }
 function handleAdd() {
+
     var maNhanVien = getEle("maNhanVien").value;
     var tenNhanVien = getEle("tenNhanVien").value;
     var chucVu = getEle("chucVu").value;
@@ -79,6 +145,7 @@ function handleAdd() {
         .catch(function (error) {
             console.error(error);
         });
+    getEle("maNhanVien").disabled = false;
     getEle("maNhanVien").value = "";
     getEle("tenNhanVien").value = "";
     getEle("chucVu").value = "Chọn chức vụ";
@@ -89,19 +156,19 @@ function handleAdd() {
 function renderEm(data) {
     console.log(data);
     var content = "";
-    data.forEach(function (em) {
-        var tongLuong = em.luongCoBan * em.soGioLamTrongThang;
+    data.forEach(function (nv) {
+        var tongLuong = nv.luongCoBan * nv.soGioLamTrongThang;
         content += `<tr>
-        <td>${em.maNhanVien}</td>
-        <td>${em.tenNhanVien}</td>
-        <td>${em.chucVu}</td>
-        <td>${em.heSoChucVu}</td>
-        <td>${em.luongCoBan}</td>
-        <td>${em.soGioLamTrongThang}</td>
+        <td>${nv.maNhanVien}</td>
+        <td>${nv.tenNhanVien}</td>
+        <td>${nv.chucVu}</td>
+        <td>${nv.heSoChucVu}</td>
+        <td>${nv.luongCoBan}</td>
+        <td>${nv.soGioLamTrongThang}</td>
         <td>${tongLuong}</td>
         <td>
-          <button class="btn btn-success" onclick="btnSua('${em.maNhanVien}')">Sửa</button>
-          <button class="btn btn-danger" onclick="handleDelete('${em.maNhanVien}')">Xóa</button>
+          <button class="btn btn-success" onclick="handleEdit('${nv.maNhanVien}')">Sửa</button>
+          <button class="btn btn-danger" onclick="handleDelete('${nv.maNhanVien}')">Xóa</button>
         </td>
       </tr>`;
     });
